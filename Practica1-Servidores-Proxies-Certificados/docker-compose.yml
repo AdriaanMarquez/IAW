@@ -1,0 +1,9 @@
+services:
+  apache-nimbus:
+    image: ubuntu/apache2:latest
+    container_name: apache-adrian
+    ports:
+      - "8080:80"
+    volumes:
+      - ./apache-config/sites-available:/etc/apache2/sites-available
+      - ./www:/var/www
