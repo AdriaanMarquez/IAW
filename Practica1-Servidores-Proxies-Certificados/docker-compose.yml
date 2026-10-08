@@ -2,8 +2,19 @@ services:
   apache-nimbus:
     image: ubuntu/apache2:latest
     container_name: apache-adrian
-    ports:
-      - "8080:80"
+    # Hemos borrado el bloque "ports" porque Apache ya no sale a internet directamente
     volumes:
       - ./apache-config/sites-available:/etc/apache2/sites-available
       - ./www:/var/www
+
+  nginx-nimbus:
+    image: nginx:latest
+    container_name: nginx-adrian
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx-config/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx-config/ssl:/etc/nginx/ssl
+    depends_on:
+      - apache-nimbus
