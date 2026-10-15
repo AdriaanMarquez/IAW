@@ -1,6 +1,4 @@
-# Adrian Marquez Rodriguez
-
-# Práctica 1 - Servidores, Proxies y Certificados
+# Adrian Marquez Rodriguez - Práctica 1 - Servidores, Proxies y Certificados
 
 Este repositorio contiene la infraestructura completa para NimbusDocs, desplegada con Docker.
 
@@ -52,5 +50,3 @@ Para el backend de Apache he decidido utilizar el módulo **MPM Event** (desacti
 ```bash
    curl -k --resolve docs.adrian.iaw:443:127.0.0.1 https://docs.adrian.iaw
 ```
-
-4. Aplicar cambios de configuración sin reconstruir: ver sección "Flujo de trabajo".
