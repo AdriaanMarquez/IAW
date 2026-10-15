@@ -1,4 +1,4 @@
-#Adrian Marquez Rodriguez
+# Adrian Marquez Rodriguez
 
 # Práctica 1 - Servidores, Proxies y Certificados
 
@@ -20,3 +20,37 @@ Para el backend de Apache he decidido utilizar el módulo **MPM Event** (desacti
 1.  **Naturaleza del contenido:** Nuestro servidor NimbusDocs sirve principalmente documentación (archivos HTML estáticos). El MPM Event está diseñado específicamente para brillar en este escenario de contenido estático y alta concurrencia.
 2.  **Gestión de conexiones (Keep-Alive):** A diferencia de `prefork` (que dedica un proceso entero y pesado a cada usuario), `event` es multihilo y delega el mantenimiento de las conexiones inactivas (Keep-Alive) a un hilo secundario dedicado. Esto libera a los hilos de trabajo inmediatamente después de enviar un archivo, permitiendo atender a muchísimos más usuarios con un consumo de memoria RAM drásticamente menor.
 3.  **Arquitectura con Proxy Inverso:** Al tener a Nginx actuando como escudo por delante, Apache ya no tiene que lidiar con conexiones lentas de internet. Nginx le entrega las peticiones ya masticadas, por lo que el modelo multihilo de MPM Event es la opción más rápida para procesar esas ráfagas de peticiones locales que llegan por el puerto 80.
+
+
+## Cómo arrancar el proyecto
+
+1. Añadir los dominios al fichero hosts:
+   - Linux/macOS: `sudo nano /etc/hosts`
+   - Windows (como administrador): `C:\Windows\System32\drivers\etc\hosts`
+
+```
+   127.0.0.1  docs.adrian.iaw  interno.adrian.iaw
+```
+
+2. Levantar la infraestructura (los sitios de Apache ya se activan solos desde su Dockerfile):
+
+```bash
+   docker compose up -d --build
+   docker compose ps
+```
+
+3. Probar (el navegador avisará del certificado autofirmado; es normal):
+
+```bash
+   curl -k https://docs.adrian.iaw
+   curl -k https://interno.adrian.iaw
+   curl -k https://interno.adrian.iaw/config-db-nimbus.ini   # debe dar 403
+```
+
+   Alternativa sin tocar el fichero hosts:
+
+```bash
+   curl -k --resolve docs.adrian.iaw:443:127.0.0.1 https://docs.adrian.iaw
+```
+
+4. Aplicar cambios de configuración sin reconstruir: ver sección "Flujo de trabajo".
