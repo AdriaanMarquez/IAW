@@ -102,11 +102,6 @@ curl -k -I -H "Host: docs.adrian.iaw" https://localhost
 # Prueba del ataque DDoS para comprobar el Rate Limiting (Códigos 503)
 for i in {1..20}; do curl -k -s -o /dev/null -w "%{http_code}\n" -H "Host: docs.adrian.iaw" https://localhost; done
 
-4. Entregable (El README de la Fase 2)
-
-Copia todo este texto y pégalo tal cual en tu archivo Fase2/README.md:
-Markdown
-
 # Fase 2 - Proxy Inverso y Seguridad con Nginx
 
 En esta segunda fase he puesto un servidor Nginx por delante de mi Apache. Ahora Apache está "escondido" (ya no expone sus puertos hacia fuera) y Nginx es el que da la cara, encargándose de la seguridad y de pasarle el tráfico limpio a Apache.
