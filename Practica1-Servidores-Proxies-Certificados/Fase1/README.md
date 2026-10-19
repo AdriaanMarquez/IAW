@@ -12,9 +12,9 @@ Practica1-Servidores-Proxies-Certificados/
 └── www/
     ├── catchall/
     │   └── index.html
-    ├── docs/
+    ├── docs.adrian/
     │   └── index.html
-    └── interno/
+    └── interno.adrian/
         ├── index.html
         └── config-db-nimbus.ini
 
@@ -50,12 +50,12 @@ Apache
 
 <VirtualHost *:80>
     ServerName docs.adrian.iaw
-    DocumentRoot /var/www/docs
+    DocumentRoot /var/www/docs.adrian
 
     ErrorLog ${APACHE_LOG_DIR}/docs_error.log
     CustomLog ${APACHE_LOG_DIR}/docs_access.log combined
 
-    <Directory /var/www/docs>
+    <Directory /var/www/docs.adrian>
         Require all granted
     </Directory>
 </VirtualHost>
@@ -65,12 +65,12 @@ Apache
 
 <VirtualHost *:80>
     ServerName interno.adrian.iaw
-    DocumentRoot /var/www/interno
+    DocumentRoot /var/www/interno.adrian
 
     ErrorLog ${APACHE_LOG_DIR}/interno_error.log
     CustomLog ${APACHE_LOG_DIR}/interno_access.log combined
 
-    <Directory /var/www/interno>
+    <Directory /var/www/interno.adrian>
         Options -Indexes
         Require all granted
     </Directory>
@@ -89,15 +89,23 @@ HTML
 
 <h1>Error: Dominio desconocido Adrian</h1>
 
-www/docs/index.html
+www/docs.adrian/index.html
 HTML
 
-<h1>Esta es la marca Publica de Adrian</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>NimbusDocs - Docs.Adrian</title></head>
+<body><h1>Esta es la marca pública de Adrian</h1></body>
+</html>
 
-www/interno/index.html
+www/interno.adrian/index.html
 HTML
 
-<h1>Esta es la marca interna la cual es privada y ademas esta protegida</h1>
+<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="utf-8"><title>NimbusDocs - Interno</title></head>
+<body><h1>Esta es la marca interna, privada y protegida</h1></body>
+</html>
 
 www/interno/config-db-nimbus.ini
 Ini, TOML
@@ -130,50 +138,3 @@ curl -H "Host: docs.adrian.iaw" http://localhost:8080
 curl -H "Host: interno.adrian.iaw" http://localhost:8080
 curl -H "Host: interno.adrian.iaw" http://localhost:8080/config-db-nimbus.ini
 curl -H "Host: minombre.es" http://localhost:8080
-
-
-## 2. Estructura de carpetas para dockers
-
-Para usar Apache sobre dockers y llevármelo de casa a clase sin instalar nada directamente en mi PC, la estructura de archivos que tengo creada es esta:
-
-```text
-/apache-config
-  /sites-available
-    000-catchall.conf
-    docs.adrian.conf
-    interno.adrian.conf
-/www
-  /catchall
-    index.html
-  /docs
-    index.html
-  /interno
-    index.html
-    config-db-nimbus.ini  <-- Este es el archivo sensible con nombre propio
-docker-compose.yml
-
-En los archivos .conf, el DocumentRoot apunta a la ruta /var/www/carpeta que está enlazada (mediante volúmenes) con mis carpetas locales de www. En el archivo interno.adrian.conf también le he metido el Options -Indexes para desactivar el listado de directorios y el Require all denied para proteger el archivo .ini.
-3. Pasos para levantarlo todo
-
-1. Arrancar el contenedor:
-Desde la terminal, situado donde está el docker-compose.yml, arranco los dockers en segundo plano:
-Bash
-
-docker compose up -d
-
-2. Entrar al contenedor:
-Tengo que meterme dentro del contenedor (al que le puse el nombre de apache-adrian) para activar las configuraciones:
-Bash
-
-docker exec -it apache-adrian bash
-
-3. Activar las cosas desde DENTRO:
-Una vez dentro (el prompt cambia), ejecuto estos comandos para apagar el sitio que viene por defecto, encender los míos, poner el MPM y recargar:
-Bash
-
-a2dissite 000-default.conf
-a2ensite 000-catchall.conf docs.adrian.conf interno.adrian.conf
-a2dismod mpm_prefork mpm_worker
-a2enmod mpm_event
-service apache2 reload
-exit
