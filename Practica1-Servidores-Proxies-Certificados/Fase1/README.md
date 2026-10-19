@@ -115,14 +115,12 @@ password=secreto
 
 3. Comandos para la terminal
 
-Pega estos comandos en tu terminal (en la carpeta del proyecto) para levantar todo y entrar al contenedor:
-Bash
+Para levantar todo y entrar al contenedor:
 
 docker compose up -d
 docker exec -it apache-adrian bash
 
-Pega estos comandos una vez estés dentro del contenedor para activar las webs:
-Bash
+Dentro del contenedor para activar las webs:
 
 a2dissite 000-default.conf
 a2ensite 000-catchall.conf docs.adrian.conf interno.adrian.conf
@@ -132,7 +130,6 @@ service apache2 reload
 exit
 
 Pega estos comandos en tu terminal normal para probar que funciona y hacer las capturas:
-Bash
 
 curl -H "Host: docs.adrian.iaw" http://localhost:8080
 curl -H "Host: interno.adrian.iaw" http://localhost:8080
