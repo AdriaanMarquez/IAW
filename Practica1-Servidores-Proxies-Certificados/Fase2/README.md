@@ -90,26 +90,6 @@ server {
 
 3. Comandos para la terminal
 
-Pega este bloque en tu terminal (en la raíz del proyecto) para crear el certificado de seguridad y levantar los contenedores:
-Bash
-
-mkdir -p nginx-config/ssl
-openssl ecparam -genkey -name prime256v1 -out nginx-config/ssl/adrian.key
-openssl req -new -x509 -days 365 -key nginx-config/ssl/adrian.key -out nginx-config/ssl/adrian.crt -subj "/CN=docs.adrian.iaw"
-docker compose down
-docker compose up -d
-docker exec -it apache-adrian bash
-
-Pega estos comandos una vez estés dentro del contenedor de Apache (para volver a activar las webs, ya que el contenedor se recreó):
-Bash
-
-a2dissite 000-default.conf
-a2ensite 000-catchall.conf docs.adrian.conf interno.adrian.conf
-a2dismod mpm_prefork mpm_worker
-a2enmod mpm_event
-service apache2 reload
-exit
-
 Pega estos comandos en tu terminal normal para hacer las pruebas y capturas finales:
 Bash
 
@@ -134,7 +114,7 @@ En esta segunda fase he puesto un servidor Nginx por delante de mi Apache. Ahora
 ## 1. Certificados y Cifrado (TLS)
 Lo primero que hice fue crear las claves para que la web sea segura (HTTPS). Usé la herramienta de comandos OpenSSL para generar una clave privada usando la curva elíptica ECDSA (`prime256v1`), que es la que pedía la práctica porque es más moderna, rápida y segura que las antiguas RSA.
 Con esa clave, generé mi propio certificado (autofirmado) poniéndole como nombre principal (CN) mi marca pública: `docs.adrian.iaw`.
-Para rematar la seguridad de la conexión, configuré Nginx para que solo acepte protocolos modernos (`TLSv1.2` y `TLSv1.3`), rechazando cualquier versión antigua que pueda tener vulnerabilidades.
+Configuré Nginx para que solo acepte protocolos modernos (`TLSv1.2` y `TLSv1.3`), rechazando cualquier versión antigua que pueda tener vulnerabilidades.
 
 ## 2. Redirección HTTP a HTTPS
 Para asegurar que nadie navegue en texto plano, creé un bloque en Nginx que escucha por el puerto 80 (HTTP). Si alguien entra por ahí, Nginx le devuelve un código de redirección `301` (Permanente) y lo manda a la misma URL pero con `https://`. He elegido usar un 301 en lugar de un 302 porque es mejor para el rendimiento y el SEO: le dice a los navegadores que guarden en su caché que esta web ahora siempre es segura.
