@@ -40,5 +40,5 @@ Para el backend de Apache he decidido utilizar el módulo **MPM Event** (desacti
 ```bash
    curl -k -H "Host: docs.adrian.iaw" https://localhost
    curl -k -H "Host: interno.adrian.iaw" https://localhost
-   curl -k -H "Host: docs.adrian.iaw" https://localhost/config-db-nimbus.ini
+   curl -k -H "Host: interno.adrian.iaw" https://localhost/config-db-nimbus.ini
 ```
