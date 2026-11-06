@@ -9,7 +9,7 @@ app = Flask(__name__)
 
 # ✍️ 4.4 La llave de las sesiones está escrita aquí, en el código (y el código acaba en Git).
 #      Que salga del entorno: la variable SECRET_KEY de config/polideportivo.env.
-app.secret_key = "polideportivo"
+app.secret_key = os.environ.get("SECRET_KEY")
 
 # 👀 Detrás de Nginx: fiarse de UNA capa de X-Forwarded-For y X-Forwarded-Proto (Las que pone nuestro Nginx)
 app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
