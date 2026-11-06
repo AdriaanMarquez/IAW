@@ -15,6 +15,12 @@ function euros(float $x): string {
 
 // ✍️ 3.1 · Esta página solo admite GET (ver el formulario) y POST (enviarlo). Con cualquier otro método:
 //    código 405, cabecera «Allow: GET, POST» y se acaba ahí. Pista: $_SERVER['REQUEST_METHOD'], http_response_code, header, exit.
+$metodo = $_SERVER['REQUEST_METHOD'];
+if ($metodo !== 'GET' && $metodo !== 'POST') {
+    http_response_code(405);
+    header('Allow: GET, POST');
+    exit('Método no permitido');
+}
 
 $errores = [];
 $hecho = false;
@@ -24,15 +30,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $comentario = trim($_POST['comentario'] ?? '');
 
     // ✍️ 3.2 · La cantidad tiene que ser un número ENTERO del 1 al 5. Si no lo es, añade a $errores:
-    //    'La cantidad tiene que ser un número entero del 1 al 5.'   Pista: filter_var con FILTER_VALIDATE_INT y min_range/max_range.
-    $cantidad = 1;
+    //    'La cantidad tiene que ser un número entero del 1 al 5.'    Pista: filter_var con FILTER_VALIDATE_INT y min_range/max_range.
+    $cantidad = filter_var($_POST['cantidad'] ?? '', FILTER_VALIDATE_INT, ['options' => ['min_range' => 1, 'max_range' => 5]]);
+    if ($cantidad === false) {
+        $errores[] = 'La cantidad tiene que ser un número entero del 1 al 5.';
+    }
 
     // ✍️ 3.3 · El plato tiene que estar en la carta. Busca en $platos el que tenga ese nombre y guárdalo en $elegido.
     //    Si no está, añade a $errores: 'Ese plato no está en la carta.'
-    $elegido = $platos[0];
+    $elegido = null;
+    foreach ($platos as $p) {
+        if ($p['nombre'] === $plato) {
+            $elegido = $p;
+        }
+    }
+    if ($elegido === null) {
+        $errores[] = 'Ese plato no está en la carta.';
+    }
 
     // ✍️ 3.4 · Si hay errores, contesta con el código 422 (datos no válidos). Si no, $hecho = true.
-    $hecho = true;
+    if ($errores) {
+        http_response_code(422);
+    } else {
+        $hecho = true;
+    }
 }
 require __DIR__ . '/inc/cabecera.php';
 ?>
@@ -55,8 +76,8 @@ require __DIR__ . '/inc/cabecera.php';
 <?php endforeach; ?>
 <?php if ($hecho): ?>
 <?php // ✍️ 3.5 · Estas líneas imprimen lo que escribió el usuario TAL CUAL: arréglalas para que no haya XSS. ?>
-  <p class="ok" id="pedido">Pedido recibido, <?= $nombre ?>: <?= $cantidad ?> × <?= $elegido['nombre'] ?>.</p>
-  <p id="comentario">Comentario: <?= $comentario ?></p>
+  <p class="ok" id="pedido">Pedido recibido, <?= e($nombre) ?>: <?= $cantidad ?> × <?= e($elegido['nombre']) ?>.</p>
+  <p id="comentario">Comentario: <?= e($comentario) ?></p>
   <p id="total">Total: <?= euros($cantidad * $elegido['precio']) ?></p>
 <?php endif; ?>
 </body></html>
