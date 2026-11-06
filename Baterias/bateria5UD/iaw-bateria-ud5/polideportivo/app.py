@@ -8,7 +8,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 app = Flask(__name__)
 
 # ✍️ 4.4 La llave de las sesiones está escrita aquí, en el código (y el código acaba en Git).
-#      Que salga del entorno: la variable SECRET_KEY de config/polideportivo.env.
+#     Que salga del entorno: la variable SECRET_KEY de config/polideportivo.env.
 app.secret_key = os.environ.get("SECRET_KEY")
 
 # 👀 Detrás de Nginx: fiarse de UNA capa de X-Forwarded-For y X-Forwarded-Proto (Las que pone nuestro Nginx)
@@ -147,12 +147,19 @@ def admin():
 def api_pistas():
     # ✍️ 6.1 Las pistas en JSON: la lista PISTAS entera.
     # ✍️ 6.2 Con ?libres=1, solo las que están disponibles.
-    return "Sin hacer"
+    libres = request.args.get("libres")
+    if libres == "1":
+        filtradas = [p for p in PISTAS if p.get("disponible", True)]
+        return jsonify(filtradas)
+    return jsonify(PISTAS)
 
 @app.route("/api/pistas/<int:id>")
 def api_pista(id):
     # ✍️ 6.3 Una pista en JSON. Si no existe: {"error": "No existe esa pista"} con el código 404 (también en JSON).
-    return "Sin hacer"
+    p = buscar_pista(id)
+    if p is None:
+        return jsonify({"error": "No existe esa pista"}), 404
+    return jsonify(p)
 
 @app.route("/error")
 def error():
