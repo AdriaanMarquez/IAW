@@ -17,11 +17,27 @@ export YO="$(id -u):$(id -g)"   # «admin» trabaja con tu usuario: las copias s
 
 command -v docker >/dev/null 2>&1 || { echo "${R}✘ No encuentro Docker.${X} Es el mismo de las unidades: instálalo (o arranca Docker Desktop) y vuelve a probar."; exit 1; }
 docker compose version >/dev/null 2>&1 || { echo "${R}✘ Docker no responde.${X} ¿Está arrancado? (en Linux: sudo systemctl start docker)"; exit 1; }
+# La llave del certificado (certs/lab.key) no va a Git: si clonas tu repositorio en otro ordenador, no está.
+# Si falta, se hace un certificado de prueba nuevo para *.iaw.local, dentro de Docker (con la misma imagen de Nginx).
+certificado() {
+  [ -s certs/lab.key ] && [ -s certs/lab.crt ] && return 0
+  echo "No está el certificado de prueba (certs/lab.key no viaja con Git). Hago uno nuevo…"
+  mkdir -p certs
+  docker compose run --rm --no-deps -T --user "$YO" -v "$PWD/certs:/salida" --entrypoint openssl nginx \
+    req -x509 -newkey rsa:2048 -nodes -days 365 -keyout /salida/lab.key -out /salida/lab.crt \
+    -subj "/C=ES/ST=Cadiz/L=Cadiz/O=IAW-Lab/CN=*.iaw.local" \
+    -addext "subjectAltName=DNS:*.iaw.local,DNS:iaw.local" >/dev/null 2>&1 \
+    && echo "${V}✔ certs/lab.crt y certs/lab.key nuevos${X} (la llave sigue fuera de Git)" \
+    || { echo "${R}✘ No he podido hacer el certificado.${X} Prueba: docker compose build nginx"; exit 1; }
+}
 esperar_db() { for _ in $(seq 1 60); do docker compose exec -T db healthcheck.sh --connect --innodb_initialized >/dev/null 2>&1 && return 0; sleep 1; done; echo "${R}✘ MariaDB no arranca:${X} docker compose logs db"; exit 1; }
 
 case "${1:-ayuda}" in
   arrancar)
     chmod 777 logs 2>/dev/null       # PHP y Gunicorn escriben sus logs aquí con su propio usuario
+    [ -f servidor/radio.env ] || { echo "${R}✘ Falta servidor/radio.env${X} (no viaja con Git: en otro ordenador no está)."
+      echo "  Cópialo del kit (servidor/radio.env), rellena otra vez SECRET_KEY, DB_USER y DB_PASS, y después: ./practica.sh sql"; exit 1; }
+    certificado
     docker compose up -d --build || exit 1
     esperar_db
     echo
@@ -53,6 +69,7 @@ case "${1:-ayuda}" in
   parar)
     docker compose down ;;
   desde-cero)
+    certificado
     docker compose down -v && docker compose up -d && esperar_db && echo "${V}✔ Base de datos nueva, como al principio.${X} Tus usuarios: ./practica.sh sql" ;;
   *)
     sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//' ;;
