@@ -64,10 +64,22 @@ def podcasts():
 #         - Si no existe: {"error": "No existe ese podcast"} con un 404, también en JSON.
 #         - Solo GET: con cualquier otro método, 405 (eso lo hace Flask solo, si la ruta está bien declarada).
 #         - /api/podcasts/abc (no es un número) también es un 404.
+@app.route("/api/podcasts/<int:id>", methods=["GET"])
+def api_podcast(id):
+    podcast = None
+    for p in leer_podcasts():
+        if p["id"] == id:
+            podcast = p
+            break
 
+    if podcast is None:
+        return jsonify({"error": "No existe ese podcast"}), 404
+
+    return jsonify(podcast)
 
 @app.route("/api/entrar", methods=["POST"])
 def entrar():
+    pass
     # 👀 El locutor entra con la contraseña del estudio (LOCUTOR_CLAVE, en radio.env) y se lleva la «pulsera» (UD5, apartado 7).
     datos = request.get_json(silent=True) or {}
     if datos.get("clave") != os.environ.get("LOCUTOR_CLAVE"):
