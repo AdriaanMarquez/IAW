@@ -27,8 +27,15 @@ PODCASTS_DE_PRUEBA = [
 #         Cada fila, un diccionario. Nada escrito a mano.
 def conectar():
     raise RuntimeError("Sin hacer: conectar() (C2)")
-
-
+def conectar():
+    return pymysql.connect(
+        host=os.environ["DB_HOST"],
+        database=os.environ["DB_NAME"],
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASS"],
+        charset="utf8mb4",
+        cursorclass=pymysql.cursors.DictCursor,
+    )
 # ✍️ C3 · Los podcasts de la tabla podcasts, del más nuevo al más viejo, con id, titulo, programa y minutos.
 #         Si buscar no está vacío, solo los que lo llevan en el título (LIKE). Lo escribe el oyente: consulta preparada.
 def leer_podcasts(buscar=""):
