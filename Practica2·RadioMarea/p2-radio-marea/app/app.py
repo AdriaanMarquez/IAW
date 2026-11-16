@@ -39,7 +39,19 @@ def conectar():
 # ✍️ C3 · Los podcasts de la tabla podcasts, del más nuevo al más viejo, con id, titulo, programa y minutos.
 #         Si buscar no está vacío, solo los que lo llevan en el título (LIKE). Lo escribe el oyente: consulta preparada.
 def leer_podcasts(buscar=""):
-    return [p for p in PODCASTS_DE_PRUEBA if buscar.lower() in p["titulo"].lower()]
+    conn = conectar()
+    try:
+        with conn.cursor() as cur:
+            if buscar:
+                cur.execute(
+                    "SELECT id, titulo, programa, minutos FROM podcasts WHERE titulo LIKE %s ORDER BY fecha DESC",
+                    ("%" + buscar + "%",),
+                )
+            else:
+                cur.execute("SELECT id, titulo, programa, minutos FROM podcasts ORDER BY fecha DESC")
+            return cur.fetchall()
+    finally:
+        conn.close()
 
 
 @app.route("/api/salud")
@@ -64,7 +76,6 @@ def quien():
 def podcasts():
     # 👀 La lista, para la app del móvil: /api/podcasts  o  /api/podcasts?buscar=faro
     return jsonify(leer_podcasts(request.args.get("buscar", "")))
-
 
 # ✍️ B4 · Un podcast: /api/podcasts/2 (UD5, apartados 5 y 8).
 #         - Si existe: ese podcast en JSON (búscalo en lo que da leer_podcasts()).
